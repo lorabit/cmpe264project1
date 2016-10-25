@@ -1,0 +1,179 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage{cvpr}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{subfigure}
+
+% Include other packages here, before hyperref.
+
+% If you comment hyperref and then uncomment it, you should delete
+% egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
+% run, let it finish, and you should be clear).
+\usepackage[breaklinks=true,bookmarks=false]{hyperref}
+
+\cvprfinalcopy % *** Uncomment this line for the final submission
+
+\def\cvprPaperID{****} % *** Enter the CVPR Paper ID here
+\def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
+
+% Pages are numbered in submission mode, and unnumbered in camera-ready
+%\ifcvprfinal\pagestyle{empty}\fi
+\setcounter{page}{4321}
+\begin{document}
+
+%%%%%%%%% TITLE
+\title{CMPE 264 - Project Assignment 1}
+
+\author{Yanan Xie\\
+{\tt\small yaxie@ucsc.edu}
+% For a paper whose authors are all at the same institution,
+% omit the following lines up until the closing ``}''.
+% Additional authors and addresses can be added with ``\and'',
+% just like the second author.
+% To save space, use either the email address or home page, not both
+\and
+Ziqiang Wang\\
+{\tt\small secondauthor@i2.org}
+}
+
+\maketitle
+%\thispagestyle{empty}
+
+%%%%%%%%% ABSTRACT
+
+%%%%%%%%% BODY TEXT
+\section{Camera radiometric calibration}
+
+In this section, we describe how we take pictures and estimate the relationship between B and T.
+
+%-------------------------------------------------------------------------
+\subsection{Taking pictures}
+
+In order to simulate a surface with uniform radiance, we put a scratch paper on the table. Then, we took 9 pictures with a Canon 5D Mark II(DSLR) and a 40mm lens. A tripod was utilized to stabilize the camera. ISO was set to 100. F-number of the lens was set to 4. The exposure times of those 9 pictures are $1/25s$, $1/30s$, $1/40s$, $1/50s$, $1/60s$, $1/80s$, $1/100s$, $1/125s$, and $1/160s$ respectively. Pictures are all JPEG format. Figure \ref{fig:samplepicture} shows a picture taken with $T = 1/30s$ as an example. \\
+
+Sample area was chosen to be the center of the picture with a size $100\times 100$. As shown in figure \ref{fig:sampler}, \ref{fig:sampleg} and \ref{fig:sampleb}, the sampled areas are not saturated in any channels. And the strips confirmed that the pictures were taken very stably.
+
+\begin{figure}[bhp]
+\includegraphics[width=\columnwidth]{images/_MG_6277}
+\caption{T = 1/30s}
+
+\label{fig:samplepicture}
+\end{figure}
+
+
+\begin{figure}[t]
+\centering
+\subfigure[T=$1/160s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/0_2}
+}
+\subfigure[T=$1/125s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/1_2}
+}
+\subfigure[T=$1/100s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/2_2}
+}
+\subfigure[T=$1/80s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/3_2}
+}
+\subfigure[T=$1/60s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/4_2}
+}
+\subfigure[T=$1/50s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/5_2}
+}
+\subfigure[T=$1/40s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/6_2}
+}
+\subfigure[T=$1/30s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/7_2}
+}
+\subfigure[T=$1/25s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/8_2}
+}
+
+\caption{Sample areas of Channel R}
+\label{fig:sampler}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\subfigure[T=$1/160s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/0_1}
+}
+\subfigure[T=$1/125s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/1_1}
+}
+\subfigure[T=$1/100s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/2_1}
+}
+\subfigure[T=$1/80s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/3_1}
+}
+\subfigure[T=$1/60s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/4_1}
+}
+\subfigure[T=$1/50s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/5_1}
+}
+\subfigure[T=$1/40s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/6_1}
+}
+\subfigure[T=$1/30s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/7_1}
+}
+\subfigure[T=$1/25s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/8_1}
+}
+
+\caption{Sample areas of Channel G}
+\label{fig:sampleg}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\subfigure[T=$1/160s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/0_0}
+}
+\subfigure[T=$1/125s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/1_0}
+}
+\subfigure[T=$1/100s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/2_0}
+}
+\subfigure[T=$1/80s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/3_0}
+}
+\subfigure[T=$1/60s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/4_0}
+}
+\subfigure[T=$1/50s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/5_0}
+}
+\subfigure[T=$1/40s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/6_0}
+}
+\subfigure[T=$1/30s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/7_0}
+}
+\subfigure[T=$1/25s$]{
+\includegraphics[width=.3\columnwidth]{images/samples/8_0}
+}
+
+\caption{Sample areas of Channel B}
+\label{fig:sampleb}
+\end{figure}
+
+\subsection{Discovering the relation between $B$ and $T$}
+
+$B$ is estimated by the average value of the sampled area $B'$. We calculate $B'$ in RGB channels independently in order to solve the non-linear function between $B'$ and $B$.
+
+{\small
+\bibliographystyle{ieee}
+\bibliography{egbib}
+}
+
+\end{document}
