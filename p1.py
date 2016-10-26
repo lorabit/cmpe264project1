@@ -8,7 +8,7 @@ import numpy as np
 from math import log
 
 sample_rect = (1300,1300,100,100)
-channel = 0
+channel = 2
 
 exposure_times = []
 sample_values = []
@@ -59,12 +59,12 @@ print(np.mean((regr.predict(train_x) - train_y) ** 2))
 fited_x = train_x
 fited_y = regr.predict(fited_x)
 
-# plt.scatter(exposure_times,sample_values,color ='Red')
-# plt.plot(fited_x,fited_y)
-# plt.plot()
-# plt.xlabel('ln(T)')
-# plt.ylabel('ln(B\')')
-# plt.show()
+plt.scatter(exposure_times,sample_values,color ='Red')
+plt.plot(fited_x,fited_y)
+plt.plot()
+plt.xlabel('T(s)')
+plt.ylabel('B\'^g')
+plt.show()
 		# for tag, value in info.items():
 		# 	decoded = TAGS.get(tag, tag)
 		# 	print(decoded)
