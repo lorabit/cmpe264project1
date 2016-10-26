@@ -5,10 +5,10 @@ from PIL.ExifTags import TAGS
 import matplotlib.pyplot as plt
 from sklearn import datasets, linear_model
 import numpy as np
+from math import log
 
 sample_rect = (1300,1300,100,100)
-g = 8.5
-channel = 2
+channel = 0
 
 exposure_times = []
 sample_values = []
@@ -23,7 +23,7 @@ def sample(filename):
 			sample_image[i][j] = [image[i+sample_rect[0]][j+sample_rect[1]][channel]]*3
 			ret = ret + image[i+sample_rect[0]][j+sample_rect[1]][channel]
 	cv2.imwrite('t/samples/'+str(count)+'_'+str(channel)+'.jpg',sample_image)
-	return float(pow(ret/(sample_rect[2]*sample_rect[3]),g))/pow(255,g)
+	return float(ret)/(sample_rect[2]*sample_rect[3])
 
 def exposure(filename):
 	image = Image.open('t/'+filename)
@@ -35,8 +35,8 @@ def exposure(filename):
 files = os.listdir('t')
 for filename in files:
 	if filename[-3:].lower()=='jpg':
-		exposure_times.append(exposure(filename))
-		sample_values.append(sample(filename))
+		exposure_times.append(log(exposure(filename)))
+		sample_values.append(log(sample(filename)))
 		count = count + 1
 
 print(exposure_times)
@@ -50,17 +50,21 @@ train_y = np.array(sample_values).reshape(len(sample_values),1)
 regr.fit(train_x, train_y)
 
 # The coefficients
-print('%.1f\t\t%f\t\t%f' %(g,regr.coef_ , np.mean((regr.predict(train_x) - train_y) ** 2)))
+print(regr.coef_)
+g = regr.coef_[0][0]
+print(1/g)
+print(regr.intercept_)
+print(np.mean((regr.predict(train_x) - train_y) ** 2))
 
 fited_x = train_x
 fited_y = regr.predict(fited_x)
 
-plt.scatter(exposure_times,sample_values,color ='Red')
-plt.plot(fited_x,fited_y)
-plt.plot()
-plt.xlabel('T(s)')
-plt.ylabel('(B`/255)^g (g='+str(g)+')')
-plt.show()
+# plt.scatter(exposure_times,sample_values,color ='Red')
+# plt.plot(fited_x,fited_y)
+# plt.plot()
+# plt.xlabel('ln(T)')
+# plt.ylabel('ln(B\')')
+# plt.show()
 		# for tag, value in info.items():
 		# 	decoded = TAGS.get(tag, tag)
 		# 	print(decoded)

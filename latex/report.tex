@@ -173,102 +173,105 @@ Sample area was chosen to be the center of the picture with a size $100\times 10
 
 $B$ is estimated by the average value of the sampled area $B'$. We calculate $B'$ in RGB channels independently in order to solve the non-linear function between $B'$ and $B$. \\
 
-We assume $B = k\frac{B'}{255}^gT$ following the assumption given by the instruction. However, we did add a divider under $B'$ to normalize $B$ , so that we can compare MSEs(mean squared error) among different values of $g$.
+We assume $B(T) = (B'(T))^g = cETG = KT  $ following the assumption given by the instruction where $K = cEG$. By applying logarithm to both sides of the equation, we have 
+$$ g\ln(B') = \ln(K) + \ln(T) $$
+$$ \ln(B') = \ln(K)/g + \ln(T)/g = a + b\ln(T) $$ where $a = \ln(K)/g$ and $b=1/g$. \\
 
+We used sklearn to estimate the coefficient of linear regression. As shown in Table \ref{tab:linear}, we chose $g_R = 2.308$, $g_G = 1.962$ and $g_B = 1.484$ for RGB channels respectively.\\
 
-
-\begin{figure}[t]
-\centering
-\subfigure[$g=1.0$]{
-\includegraphics[width=.47\columnwidth]{images/rchannel10}
-}
-\subfigure[$g=3.5$]{
-\includegraphics[width=.47\columnwidth]{images/rchannel35}
-}
-\subfigure[$g=6.0$]{
-\includegraphics[width=.47\columnwidth]{images/rchannel60}
-}
-\subfigure[$g=8.5$]{
-\includegraphics[width=.47\columnwidth]{images/rchannel85}
-}
-
-\caption{$\frac{B'}{255}^g$ and $T$ in Channel R}
-\label{fig:sampleb}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-\subfigure[$g=1.0$]{
-\includegraphics[width=.47\columnwidth]{images/gchannel10}
-}
-\subfigure[$g=1.5$]{
-\includegraphics[width=.47\columnwidth]{images/gchannel25}
-}
-\subfigure[$g=2.0$]{
-\includegraphics[width=.47\columnwidth]{images/gchannel35}
-}
-\subfigure[$g=2.5$]{
-\includegraphics[width=.47\columnwidth]{images/gchannel45}
-}
-
-\caption{$\frac{B'}{255}^g$ and $T$ in Channel G}
-\label{fig:sampleb}
-\end{figure}
-\begin{figure}[t]
-\centering
-\subfigure[$g=1.0$]{
-\includegraphics[width=.47\columnwidth]{images/bchannel10}
-}
-\subfigure[$g=1.5$]{
-\includegraphics[width=.47\columnwidth]{images/bchannel15}
-}
-\subfigure[$g=2.0$]{
-\includegraphics[width=.47\columnwidth]{images/bchannel20}
-}
-\subfigure[$g=2.5$]{
-\includegraphics[width=.47\columnwidth]{images/bchannel25}
-}
-
-\caption{$\frac{B'}{255}^g$ and $T$ in Channel B}
-\label{fig:sampleb}
-\end{figure}
 
 \begin{table}[]
 \caption{Linear regression results}
 \centering
-\begin{tabular}{|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|}
 \hline
+Channel &  $a$  &  $b$ & $g$ & mean squared error  \\
 \hline
-Channel &  g  &  coefficient & mean squared error  \\
+
+Red & 7.011 & 0.4334 & 2.308 & 0.004156 \\
 \hline
- \multirow{4}{*}{R} &  1.0  & 15.507411  &  0.005077  \\
- \cline{2-4}
-&3.5&27.524782&0.003586\\
- \cline{2-4}
-&6.0&28.342635&\textbf{0.001135}\\
- \cline{2-4}
-&8.5&26.893380&0.002171\\
- \hline
- \multirow{4}{*}{G} &  1.0 &15.688164&0.002517\\
- \cline{2-4}
-&2.5&20.172157&0.000763\\
- \cline{2-4}
-&3.5&19.114863&\textbf{0.000191}\\
- \cline{2-4}
-&4.5&17.217906&0.000381\\
- \hline
- \multirow{4}{*}{B} &1.0&13.43860314&0.000583\\
- \cline{2-4}
-&1.5&12.83838657&0.000202\\
- \cline{2-4}
-&2.0&11.11682836&\textbf{0.000067}\\
- \cline{2-4}
-&2.5&9.18619509&0.000077\\
+Green & 7.129& 0.5097 & 1.962 & 0.002331\\
+\hline
+Blue & 7.297 & 0.6737 & 1.484 & 0.0008915\\
+\hline
+
  \hline
 
 \end{tabular}
 \label{tab:linear}
 \end{table}
+
+
+With estimation of $g$, and given the value of $B'(T_0) = (KT_0)^{1/g}$ for some pixel, we can estimate $B'(T_1)$ by 
+\begin{equation}
+\begin{aligned}
+B'(T_1)     &=  (KT_1)^{1/g}\\
+            &=  (KT_0)^{1/g}T_1^{1/g}/T_0^{1/g}\\
+            &=  B'(T_0) (\frac{T_1}{T_0})^{1/g}
+\end{aligned}
+\end{equation}
+for the same pixel.
+
+
+
+
+% \begin{figure}[t]
+% \centering
+% \subfigure[$g=1.0$]{
+% \includegraphics[width=.47\columnwidth]{images/rchannel10}
+% }
+% \subfigure[$g=3.5$]{
+% \includegraphics[width=.47\columnwidth]{images/rchannel35}
+% }
+% \subfigure[$g=6.0$]{
+% \includegraphics[width=.47\columnwidth]{images/rchannel60}
+% }
+% \subfigure[$g=8.5$]{
+% \includegraphics[width=.47\columnwidth]{images/rchannel85}
+% }
+
+% \caption{$\frac{B'}{255}^g$ and $T$ in Channel R}
+% \label{fig:sampleb}
+% \end{figure}
+
+% \begin{figure}[t]
+% \centering
+% \subfigure[$g=1.0$]{
+% \includegraphics[width=.47\columnwidth]{images/gchannel10}
+% }
+% \subfigure[$g=1.5$]{
+% \includegraphics[width=.47\columnwidth]{images/gchannel25}
+% }
+% \subfigure[$g=2.0$]{
+% \includegraphics[width=.47\columnwidth]{images/gchannel35}
+% }
+% \subfigure[$g=2.5$]{
+% \includegraphics[width=.47\columnwidth]{images/gchannel45}
+% }
+
+% \caption{$\frac{B'}{255}^g$ and $T$ in Channel G}
+% \label{fig:sampleb}
+% \end{figure}
+% \begin{figure}[t]
+% \centering
+% \subfigure[$g=1.0$]{
+% \includegraphics[width=.47\columnwidth]{images/bchannel10}
+% }
+% \subfigure[$g=1.5$]{
+% \includegraphics[width=.47\columnwidth]{images/bchannel15}
+% }
+% \subfigure[$g=2.0$]{
+% \includegraphics[width=.47\columnwidth]{images/bchannel20}
+% }
+% \subfigure[$g=2.5$]{
+% \includegraphics[width=.47\columnwidth]{images/bchannel25}
+% }
+
+% \caption{$\frac{B'}{255}^g$ and $T$ in Channel B}
+% \label{fig:sampleb}
+% \end{figure}
+
+
 
 
 
