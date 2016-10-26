@@ -24,7 +24,7 @@
 
 % Pages are numbered in submission mode, and unnumbered in camera-ready
 %\ifcvprfinal\pagestyle{empty}\fi
-\setcounter{page}{4321}
+\setcounter{page}{1}
 \begin{document}
 
 %%%%%%%%% TITLE
@@ -49,6 +49,7 @@ Ziqiang Wang\\
 
 %%%%%%%%% BODY TEXT
 \section{Camera radiometric calibration}
+\label{sec:crc}
 
 In this section, we describe how we take pictures and estimate the relationship between $B$ and $T$.
 
@@ -61,7 +62,7 @@ Sample area was chosen to be the center of the picture with a size $100\times 10
 
 \begin{figure}[bhp]
 \includegraphics[width=\columnwidth]{images/_MG_6277}
-\caption{T = 1/30s}
+\caption{Picture took with $T = 1/30s$}
 
 \label{fig:samplepicture}
 \end{figure}
@@ -177,7 +178,7 @@ We assume $B(T) = (B'(T))^g = cETG = KT  $ following the assumption given by the
 $$ g\ln(B') = \ln(K) + \ln(T) $$
 $$ \ln(B') = \ln(K)/g + \ln(T)/g = a + b\ln(T) $$ where $a = \ln(K)/g$ and $b=1/g$. \\
 
-We used sklearn to estimate the coefficient of linear regression. We took $[\ln(T_i)]$ as the $X$ vector, and $[\ln(B'_i)]$ as the $Y$ vector. As shown in Table \ref{tab:linear}, the result suggests us to chose $g_R = 2.308$, $g_G = 1.962$ and $g_B = 1.484$ for RGB channels respectively.\\
+We used sklearn to estimate the coefficient of linear regression by taking $[\ln(T_i)]$ as the $X$ vector, and $[\ln(B'_i)]$ as the $Y$ vector. As shown in Table \ref{tab:linear}, the result suggests us to choose $g_R = 2.308$, $g_G = 1.962$ and $g_B = 1.484$ for RGB channels respectively. We show the $B'^g(T)$ curves before and after applied estimated $g$ in Figure \ref{fig:samplecurves}\\
 
 
 \begin{table}[]
@@ -202,18 +203,22 @@ Blue & 7.297 & 0.6737 & 1.484 & 0.0008915\\
 \end{table}
 
 
-With estimation of $g$, and given the value of $B'(T_0) = (KT_0)^{1/g}$ for some pixel, we can estimate $B'(T_1)$ by 
+With estimation of $g$, and given the value of $B'(T) = (KT)^{1/g}$ for some pixel, we can estimate $B'(T_{dest})$ by 
 \begin{equation}
 \begin{aligned}
-B'(T_1)     &=  (KT_1)^{1/g}\\
-            &=  (KT_0)^{1/g}T_1^{1/g}/T_0^{1/g}\\
-            &=  B'(T_0) (\frac{T_1}{T_0})^{1/g}
+B'(T_{dest})     &=  (KT_{dest})^{1/g}\\
+            &=  (KT)^{1/g}T_{dest}^{1/g}/T^{1/g}\\
+            &=  B'(T) (\frac{T_{dest}}{T})^{1/g}
 \end{aligned}
+\label{equ:nonlinear}
 \end{equation}
-for the same pixel.
-
-
-
+for the same pixel. Also, we can estimate $B(T)$ by
+\begin{equation}
+\begin{aligned}
+B(T)     &=  B'^g(T)
+\end{aligned}.
+\label{equ:linear}
+\end{equation}
 
 \begin{figure}[t]
 \centering
@@ -238,11 +243,54 @@ for the same pixel.
 }
 
 \caption{$B'^g(T)$ Curves}
-\label{fig:sampleb}
+\label{fig:samplecurves}
 \end{figure}
 
+\section{Acquire a picture stack}
+\label{sec:stack}
 
+We took another 10 pictures with the same camera and a 17mm lens. ISO was set to 400 and F-number was set to 4. The optimal exposure time was chosen to be $T_0 = 1/100s$ so that there were no saturation(ensured by the warning from camera). Then we picked another two pictures with $T_1 = 1/4s$, $T_2 = 6s$, since they got good exposures on different layers as shown in Figure \ref{fig:picturestack}. \\
 
+Equation \ref{equ:linear} was applied to obtain the linearized pictures. To ensure the values of $B(T)$ fall in the range $[0,255]$, we divided the values of $B(T) = B'^g(T)$ by $255^{g-1}$ for each channel. The result is also shown in Figure \ref{fig:picturestack}.
+
+\begin{figure}[t]
+\centering
+\subfigure[Picture with $T=1/100s$]{
+\includegraphics[width=.47\columnwidth]{images/hdr/_MG_6295}
+}
+\subfigure[Linearized (a)]{
+\includegraphics[width=.47\columnwidth]{images/hdr/simple_linear/_MG_6295}
+}
+
+\subfigure[Picture with $T=1/4s$]{
+\includegraphics[width=.47\columnwidth]{images/hdr/_MG_6298}
+}
+\subfigure[Linearized (c)]{
+\includegraphics[width=.47\columnwidth]{images/hdr/simple_linear/_MG_6298}
+}
+
+\subfigure[Picture with $T=6s$]{
+\includegraphics[width=.47\columnwidth]{images/hdr/_MG_6301}
+}
+\subfigure[Linearized (e)]{
+\includegraphics[width=.47\columnwidth]{images/hdr/simple_linear/_MG_6301}
+}
+
+\caption{Picture Stack}
+\label{fig:picturestack}
+\end{figure} 
+
+\section{Create composite image}
+\label{sec:create}
+
+\section{Reproduce composite image}
+\label{sec:reproduce}
+
+\section{Acknowledgment}
+We did all the project together. However, Ziqiang Wang is mainly responsible for
+Section \ref{sec:create} and Section \ref{sec:reproduce} while Yanan Xie is responsible for the rest parts of this project including providing his professional photography devices.\\
+
+Thanks to \LaTeX\ for providing such a great document preparation system. And many appreciates to the authors of Python, numpy, sklearn, OpenCV and matplotlib.\\
 
 
 
