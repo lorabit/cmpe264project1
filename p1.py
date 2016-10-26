@@ -7,8 +7,8 @@ from sklearn import datasets, linear_model
 import numpy as np
 
 sample_rect = (1300,1300,100,100)
-g = 2.6
-channel = 0
+g = 8.5
+channel = 2
 
 exposure_times = []
 sample_values = []
@@ -23,7 +23,7 @@ def sample(filename):
 			sample_image[i][j] = [image[i+sample_rect[0]][j+sample_rect[1]][channel]]*3
 			ret = ret + image[i+sample_rect[0]][j+sample_rect[1]][channel]
 	cv2.imwrite('t/samples/'+str(count)+'_'+str(channel)+'.jpg',sample_image)
-	return pow(ret/(sample_rect[2]*sample_rect[3]),g)
+	return float(pow(ret/(sample_rect[2]*sample_rect[3]),g))/pow(255,g)
 
 def exposure(filename):
 	image = Image.open('t/'+filename)
@@ -50,7 +50,7 @@ train_y = np.array(sample_values).reshape(len(sample_values),1)
 regr.fit(train_x, train_y)
 
 # The coefficients
-print('Coefficients: \n', regr.coef_)
+print('%.1f\t\t%f\t\t%f' %(g,regr.coef_ , np.mean((regr.predict(train_x) - train_y) ** 2)))
 
 fited_x = train_x
 fited_y = regr.predict(fited_x)
@@ -59,7 +59,7 @@ plt.scatter(exposure_times,sample_values,color ='Red')
 plt.plot(fited_x,fited_y)
 plt.plot()
 plt.xlabel('T(s)')
-plt.ylabel('B`^g (g='+str(g)+')')
+plt.ylabel('(B`/255)^g (g='+str(g)+')')
 plt.show()
 		# for tag, value in info.items():
 		# 	decoded = TAGS.get(tag, tag)
