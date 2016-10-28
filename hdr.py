@@ -68,9 +68,27 @@ for filename in files:
 		valid_files.append(filename)
 
 
-#Simple Linearization
+#Simple Linearization 
+#After Linearization then creat combined HDR image by ziqiang
+imgs = []
 for filename in valid_files:
-	simple_linear(filename)
+	imgs.append(simple_linear(filename))
+
+HDR_img_method_1 = imgs[0]
+
+
+for i in  range(len(imgs[0])):
+	for j in range(len(imgs[0][0])):
+		for k in range(len(imgs[0][0][0])):
+			if imgs[2][i][j][k] < 255:
+				HDR_img_method_1[i][j][k] = imgs[2][i][j][k] * (exposure_times[0]/exposure_times[2])
+			elif imgs[1][i][j][k] <255:
+				HDR_img_method_1[i][j][k] = imgs[1][i][j][k] * (exposure_times[0]/exposure_times[1])
+			else:
+				HDR_img_method_1[i][j][k] = imgs[0][i][j][k]
+
+cv2.imwrite('hdr/combined/HDR_img_method_1.jpg',HDR_img_method_1)
+
 
 
 # Average HDR
