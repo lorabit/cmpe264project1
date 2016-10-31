@@ -21,3 +21,8 @@ Before you run hdr.py, you may need to madify the following paremeters if you ne
 
 1. threshold: this is the value we use to determine whether the pixel value is sturated in the HDR composite algorithms. We tried a lot of times that the 255 is not ideal value, so we set the value to be 200 as the default value in the hdr.py, you may modify the value if you want to see different outputs image from the HDR composite algorithm.
 2. gam_value: When we use the tone map function, there is a gamma correction parameter gamma need to be set, we read from the OpenCV API that the gamma is positive value of type float. Generally speaking, if gamma > 1 the function will brighten the image, if gamma < 1 the function will darken the image. The gamma value of 1.0 implies no correction, $gamma$ equal to 2.2 is suitable for most displays. We set 2.2 to be the default value in hdr.py, you may change the value if you would like to see different outputs of tone map function.
+
+After you run hdr.py, you may find the output images in the following directories:
+
+1. /hdr/combined: the outputs of three HDR comosite algorithms will be saved in this directory.
+2. /hdr/tonemapped: the outputs of the tone map function for three HDR composite algorithms will be saved in this directory.
