@@ -282,19 +282,29 @@ Equation \ref{equ:linear} was applied to obtain the linearized pictures. To ensu
 \label{fig:picturestack}
 \end{figure} 
 
-% QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ
+% QQQQQQQQQQQQQQQQQQQQQQQ
 
 \section{Create composite image}
 \label{sec:create}
-After linearization, we acquired three 3-dimensional matrices. We put them in a list imgs[] which will be used to create the composite HDR image.The imgs[0], imgs[1] and imgs[2] represent the linearized image at exposure time $T$, $a_{1}T$ and $a_{2}T$ respectively. Three different methords are applied to create the HDR image.
+After linearization, we acquired three 3-dimensional matrices. We put them in a list imgs[] which will be used to create the composite HDR image.The imgs[0], imgs[1] and imgs[2] represent the linearized image at exposure time $T$, $a_{1}T$ and $a_{2}T$ respectively. \\
+
 \begin{python}
 imgs = []
 for filename in valid_files:
 	imgs.append(simple_linear(filename))
 \end{python}
 
+We choose the image with exposure time $T = 1/100s$, we picked another two pictures with $T_1 = a_{1}T = 1/4s$, $T_2 =a_{2}T = 6s$, the same with the linearization function chose because we will use the linearized images to composite the HDR images. Three different methords are applied to create the HDR image. \\
+
+
+
+All of the three algorithms are in the 'hdr.py', we set the saturation value as 'threshold' in the Python code, which will show up in the following three HDR composite algorithms. This value could be modified, we tried a lot of times of which value the 'threshold' should be and found that $255$ is not the ideal value, finally we select the value $200$ to be the 'threshold', so the following three algorithms are all take $200$ as the 'threshold' to determin whether the pixel value is saturated. \\
+
+
+
 \subsection{Composition Algorithm 1}
 For each pixel, use the pixel value of the image with largest exposure time such that the pixel is not saturated. \\
+
 \begin{python}
 for i in  range(len(imgs[0])):
 	for j in range(len(imgs[0][0])):
@@ -387,7 +397,7 @@ The weight for the pixel in the i-th image should be inversely proportional to t
 
 \section{Reproduce composite image}
 \label{sec:reproduce}
-In this section we will reproduce the composite image, it will also help us have better understanding of the difference between the three HDR algorithms in section 3. \\
+In this section we will reproduce the composite image, it will also help us have better understanding of the difference between the three HDR algorithms in section 3. The Python code of this section is also in the 'hdr.py', so we can make use of the output of the three HDR composite algorithms directly. \\
 
 Now we have three composite HDR images by apply three algorithms. The value of each pixel is stored as float32 type, the reason we do this is in order to use the tone mapping function in opencv, which requires the input data type to be float32.
 After tone map process, we convert the image to unsigned 8 bit and save the image. \\
