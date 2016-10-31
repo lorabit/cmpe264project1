@@ -74,21 +74,79 @@ imgs = []
 for filename in valid_files:
 	imgs.append(simple_linear(filename))
 
-HDR_img_method_1 = imgs[0]
+HDR_img_method_1 = np.zeros(imgs[0].shape, np.float32)
+HDR_img_method_2 = np.zeros(imgs[0].shape, np.float32)
+HDR_img_method_3 = np.zeros(imgs[0].shape, np.float32)
 
+threshold = 200
 
 for i in  range(len(imgs[0])):
 	for j in range(len(imgs[0][0])):
 		for k in range(len(imgs[0][0][0])):
-			if imgs[2][i][j][k] < 255:
+			if imgs[2][i][j][k] < threshold:
 				HDR_img_method_1[i][j][k] = imgs[2][i][j][k] * (exposure_times[0]/exposure_times[2])
-			elif imgs[1][i][j][k] <255:
+			elif imgs[1][i][j][k] <threshold:
 				HDR_img_method_1[i][j][k] = imgs[1][i][j][k] * (exposure_times[0]/exposure_times[1])
 			else:
 				HDR_img_method_1[i][j][k] = imgs[0][i][j][k]
 
 cv2.imwrite('hdr/combined/HDR_img_method_1.jpg',HDR_img_method_1)
 
+
+for i in  range(len(imgs[0])):
+	for j in range(len(imgs[0][0])):
+		for k in range(len(imgs[0][0][0])):
+			s = imgs[0][i][j][k] 
+			n = 1
+			if imgs[2][i][j][k] < threshold:
+				n = n +1
+				s = s + imgs[2][i][j][k] * (exposure_times[0]/exposure_times[2])
+			if imgs[1][i][j][k] <threshold:
+				n = n + 1
+				s = s + imgs[1][i][j][k] * (exposure_times[0]/exposure_times[1])
+			HDR_img_method_2[i][j][k] = s/n
+
+cv2.imwrite('hdr/combined/HDR_img_method_2.jpg',HDR_img_method_2)
+
+a1 = exposure_times[1]/exposure_times[0]
+a2 = exposure_times[2]/exposure_times[0]
+
+weight1 = 1/(pow(a1,2))
+weight2 = 1/(pow(a2,2))
+
+for i in  range(len(imgs[0])):
+	for j in range(len(imgs[0][0])):
+		for k in range(len(imgs[0][0][0])):
+			s = imgs[0][i][j][k] 
+			n = 1
+			if imgs[2][i][j][k] < threshold:
+				n = n + weight2
+				s = s + weight2 * imgs[2][i][j][k] * (exposure_times[0]/exposure_times[2])
+			if imgs[1][i][j][k] <threshold:
+				n = n + weight1
+				s = s + weight1 * imgs[1][i][j][k] * (exposure_times[0]/exposure_times[1])
+			HDR_img_method_3[i][j][k] = s/n
+
+cv2.imwrite('hdr/combined/HDR_img_method_3.jpg',HDR_img_method_3)
+
+# tone map ziqiang
+gam_value = 2.2
+tonemap1 = cv2.createTonemapDurand(gamma=gam_value)
+res_tonemap1 = tonemap1.process(HDR_img_method_1.copy())
+res_tonemap1_8bit = np.clip(res_tonemap1*255, 0, 255).astype('uint8')
+cv2.imwrite("hdr/tonemapped/res_tonemap1_8bit.jpg", res_tonemap1_8bit)
+
+
+tonemap2 = cv2.createTonemapDurand(gamma=gam_value)
+res_tonemap2 = tonemap2.process(HDR_img_method_2.copy())
+res_tonemap2_8bit = np.clip(res_tonemap2*255, 0, 255).astype('uint8')
+cv2.imwrite("hdr/tonemapped/res_tonemap2_8bit.jpg", res_tonemap2_8bit)
+
+
+tonemap3 = cv2.createTonemapDurand(gamma=gam_value)
+res_tonemap3 = tonemap3.process(HDR_img_method_3.copy())
+res_tonemap3_8bit = np.clip(res_tonemap3*255, 0, 255).astype('uint8')
+cv2.imwrite("hdr/tonemapped/res_tonemap3_8bit.jpg", res_tonemap3_8bit)
 
 
 # Average HDR

@@ -9,6 +9,8 @@
 \usepackage{subfigure}
 \usepackage{epstopdf}
 \usepackage{multirow}
+\usepackage{graphicx}  %ziqiang
+\usepackage{pythonhighlight}   %ziqiang
 
 % Include other packages here, before hyperref.
 
@@ -39,7 +41,7 @@
 % To save space, use either the email address or home page, not both
 \and
 Ziqiang Wang\\
-{\tt\small secondauthor@i2.org}
+{\tt\small zwang232@ucsc.edu}
 }
 
 \maketitle
@@ -280,11 +282,147 @@ Equation \ref{equ:linear} was applied to obtain the linearized pictures. To ensu
 \label{fig:picturestack}
 \end{figure} 
 
+% QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ
+
 \section{Create composite image}
 \label{sec:create}
+After linearization, we acquired three 3-dimensional matrices. We put them in a list imgs[] which will be used to create the composite HDR image.The imgs[0], imgs[1] and imgs[2] represent the linearized image at exposure time $T$, $a_{1}T$ and $a_{2}T$ respectively. Three different methords are applied to create the HDR image.
+\begin{python}
+imgs = []
+for filename in valid_files:
+	imgs.append(simple_linear(filename))
+\end{python}
+
+\subsection{Composition Algorithm 1}
+For each pixel, use the pixel value of the image with largest exposure time such that the pixel is not saturated. \\
+\begin{python}
+for i in  range(len(imgs[0])):
+	for j in range(len(imgs[0][0])):
+		for k in range(len(imgs[0][0][0])):
+			if imgs[2][i][j][k] < threshold:
+				HDR_img_method_1[i][j][k] 
+				= imgs[2][i][j][k] * 
+				(exposure_times[0]/exposure_times[2])
+			elif imgs[1][i][j][k] <threshold:
+				HDR_img_method_1[i][j][k] 
+				= imgs[1][i][j][k] * 
+				(exposure_times[0]/exposure_times[1])
+			else:
+				HDR_img_method_1[i][j][k] 
+				= imgs[0][i][j][k]
+\end{python}
+
+As showed in the Python code above, for each pixel and and each channel, If the value of exposure time $a_{2}T$ and $a_{1}T$ are both saturated, we will take the value of exposure time $T$, otherwise, we will use the value of lager exposure time. So this algorithm meets the requirement of Algorithm 1. The output of Algorithm 1 is shown in Figure \ref{fig:HDR_img_method_1}. 
+
+\begin{figure}[bhp]
+\includegraphics[width=\columnwidth]{images/hdr/combined/HDR_img_method_1}
+\caption{Composite image with Algorithm 1}
+
+\label{fig:HDR_img_method_1}
+\end{figure}
+
+\subsection{Composition Algorithm 2}
+For each pixel, use the average of the values in the images for which this pixel is not saturated. \\
+\begin{python}
+for i in  range(len(imgs[0])):
+	for j in range(len(imgs[0][0])):
+		for k in range(len(imgs[0][0][0])):
+			s = imgs[0][i][j][k] 
+			n = 1
+			if imgs[2][i][j][k] < threshold:
+				n = n +1
+				s = s + imgs[2][i][j][k] 
+				* (exposure_times[0]/exposure_times[2])
+			if imgs[1][i][j][k] <threshold:
+				n = n + 1
+				s = s + imgs[1][i][j][k] 
+				* (exposure_times[0]/exposure_times[1])
+			HDR_img_method_2[i][j][k] = s/n
+\end{python}
+
+Similarly to Algorithm 1, this algorithm will count all the values which are not saturated for each pixel and each channel, then divided by how many values we counted, so we have the average of the unsaturated values. The output of Algorithm 2 is shown in Figure \ref{fig:HDR_img_method_2}.
+
+\begin{figure}[bhp]
+\includegraphics[width=\columnwidth]{images/hdr/combined/HDR_img_method_2}
+\caption{Composite image with Algorithm 2}
+
+\label{fig:HDR_img_method_2}
+\end{figure}
+
+\subsection{Composition Algorithm 3}
+Compute a weighted average of the unsaturated values. \\
+\begin{python} 
+a1 = exposure_times[1]/exposure_times[0]
+a2 = exposure_times[2]/exposure_times[0]
+
+weight1 = 1/(pow(a1,2))
+weight2 = 1/(pow(a2,2))
+
+for i in  range(len(imgs[0])):
+	for j in range(len(imgs[0][0])):
+		for k in range(len(imgs[0][0][0])):
+			s = imgs[0][i][j][k] 
+			n = 1
+			if imgs[2][i][j][k] < threshold:
+				n = n + weight2
+				s = s + weight2 * imgs[2][i][j][k] 
+				* (exposure_times[0]/exposure_times[2])
+			if imgs[1][i][j][k] <threshold:
+				n = n + weight1
+				s = s + weight1 * imgs[1][i][j][k] 
+				* (exposure_times[0]/exposure_times[1])
+			HDR_img_method_3[i][j][k] = s/n
+\end{python}
+
+The weight for the pixel in the i-th image should be inversely proportional to the square of variance of the noise at that pixel for the image, which is propotional to exposure time. The output of Algorithm 2 is shown in Figure \ref{fig:HDR_img_method_3}.
+
+\begin{figure}[bhp]
+\includegraphics[width=\columnwidth]{images/hdr/combined/HDR_img_method_3}
+\caption{Composite image with Algorithm 3}
+
+\label{fig:HDR_img_method_3}
+\end{figure}
+
+
 
 \section{Reproduce composite image}
 \label{sec:reproduce}
+In this section we will reproduce the composite image, it will also help us have better understanding of the difference between the three HDR algorithms in section 3. \\
+
+Now we have three composite HDR images by apply three algorithms. The value of each pixel is stored as float32 type, the reason we do this is in order to use the tone mapping function in opencv, which requires the input data type to be float32.
+After tone map process, we convert the image to unsigned 8 bit and save the image. \\
+
+When we use the tone map function, there is a gamma correction parameter $gamma$ need to be set, we read from the OpenCV API that the $gamma$ is positive value of type float. Generally speaking, if $gamma > 1$ the function will brighten the image, if $gamma < 1$ the function will darken the image. The $gamma$ value of $1.0$ implies no correction, $gamma$ equal to $2.2$ is suitable for most displays. We want to show how the three different algorithms work with the dark pixel, so we set $gamma = 2.2$ \\
+
+After applying tone map to three HDR images composited by three algorithms accordingly, we acquired three after-tonemap images. We can tell from the after-tonemap images that how the threee HDR algorithms work differently on dark pixels. The Algorithm 1 uses the pixel value with largest exposure time such that the pixel is not saturated, we could consider this as the largest exposure time value which is unsaturated have all the weight. The Algorithm 2 use the average of the values in the images for which this pixel is not saturated, we could consider this as the unsaturated value have the same weight. As for the Algorithm 3, the weight of each unsaturated value is inversely proportional to the square of the exposure time as we showed before, so we could consider this as the larger exposure time a value has, the less weight this value takes. So the conclusion is that Algorithm 1 show more details of the dark pixels than Algorithm 2 and Algorithm 2 show more details of the dark pixels than Algorithm 3. However, Algorithm 3 has a better smooth transition between the dark and light than Algorithm 2 and Algorithm 2 has a better smooth transition than Algorthm 1. This is also shown in Figure \ref{fig:tonemap}.
+
+\begin{figure}[t]
+\centering
+\subfigure[HDR Algorithm 1]{
+\includegraphics[width=.47\columnwidth]{images/hdr/combined/HDR_img_method_1}
+}
+\subfigure[Algorithm 1 tone map]{
+\includegraphics[width=.47\columnwidth]{images/hdr/tonemapped/res_tonemap1_8bit}
+}
+
+\subfigure[HDR Algorithm 2]{
+\includegraphics[width=.47\columnwidth]{images/hdr/combined/HDR_img_method_2}
+}
+\subfigure[Algorithm 2 tone map]{
+\includegraphics[width=.47\columnwidth]{images/hdr/tonemapped/res_tonemap2_8bit}
+}
+
+\subfigure[HDR Algorithm 3]{
+\includegraphics[width=.47\columnwidth]{images/hdr/combined/HDR_img_method_3}
+}
+\subfigure[Algorithm 3 Tone map]{
+\includegraphics[width=.47\columnwidth]{images/hdr/tonemapped/res_tonemap3_8bit}
+}
+
+\caption{Before and after tone map}
+\label{fig:tonemap}
+\end{figure} 
+
 
 \section{Acknowledgment}
 We did all the project together. However, Ziqiang Wang is mainly responsible for
