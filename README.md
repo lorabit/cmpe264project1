@@ -17,6 +17,8 @@ Then, you can get linear regression and its plot by running p1.py.
 
 # Part 3&4
 
+In part 3 we generate HDR composite images with three different algorithms as required, and part 4 we make tone map images of the three outputs from three HDR composite algorithms. So we write the part 3 and part 4 in the hdr.py such that we could acquire the result of simple_linear() function to do HDR composite and then make use of HDR composite results to do tone map. 
+
 Before you run hdr.py, you may need to madify the following paremeters if you need:
 
 1. threshold: this is the value we use to determine whether the pixel value is sturated in the HDR composite algorithms. We tried a lot of times that the 255 is not ideal value, so we set the value to be 200 as the default value in the hdr.py, you may modify the value if you want to see different outputs image from the HDR composite algorithm.
